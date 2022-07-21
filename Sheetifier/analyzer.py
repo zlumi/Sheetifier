@@ -1,23 +1,23 @@
 import cv2
 
-def getKeyPositions(strtKey:str, nKeys:int, totalWidth:int, barYPos:int, blkwhtOffset:int) -> list:
+def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int) -> list:
     keys = []
-    
-    for i in range(7):
-        intChar = ord(strtKey)+i
-        if intChar <= 71:
-            keys.append(chr(intChar))
-        else:
-            keys.append(chr(intChar-7))
+    template = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
-    for key in keys:
-        if  key in ["C", "D", "F", "G", "A"]:
-            keys.insert(keys.index(key)+1, key+"#")
-        keys[keys.index(key)] = key+"0"
+    for firstOctaveKey in template[template.index(start_key[:-1]):]:
+        keys.append(firstOctaveKey + start_key[-1])
+
+    firstOctaveLength = len(keys)
+
+    for i in range(total_key_amount-firstOctaveLength):
+        keyName = template[i%12]
+        specified_keyName = keyName + str(int(start_key[-1])+int((i+firstOctaveLength)/12)+1)
+
+        keys.append(specified_keyName)
 
     while True:
         for key in keys:
-            if len(keys) < nKeys:
+            if len(keys) < total_key_amount:
                 keys.append(key[:-1]+str(int(key[-1])+1))
             else:
                 break
@@ -31,12 +31,12 @@ def getKeyPositions(strtKey:str, nKeys:int, totalWidth:int, barYPos:int, blkwhtO
     for key in keys:
         if not "#" in key:
             keys[keys.index(key)] = (key, (
-                int(totalWidth/whites*wCount) + int(totalWidth/whites/2),
-                barYPos + blkwhtOffset
+                int(total_width/whites*wCount) + int(total_width/whites/2),
+                barY + whiteOffsetFromBlack
             ))
             wCount += 1
         else:
-            keys[keys.index(key)] = (key, (int(totalWidth/whites*wCount), barYPos))
+            keys[keys.index(key)] = (key, (int(total_width/whites*wCount), barY))
     
     return keys
 
@@ -50,7 +50,7 @@ def areColorsClose(value1, value2, tolerance:int):
         return True
     return False
 
-def find_white_and_black_key_colors(vidPath, starting_key:str="F", total_keys:int=65):
+def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int):
     vCap = cv2.VideoCapture(vidPath)
     keys = getKeyPositions(
         starting_key, total_keys, 
@@ -84,7 +84,7 @@ def find_white_and_black_key_colors(vidPath, starting_key:str="F", total_keys:in
 
     return(white_unpressed, black_unpressed)
 
-def vid2dict(vidPath:str, starting_key:str="F", total_keys:int=65, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
+def vid2dict(vidPath:str, starting_key:str, total_keys:int, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
     vCap = cv2.VideoCapture(vidPath)
     keys = getKeyPositions(
         starting_key, total_keys, 
@@ -124,3 +124,36 @@ def vid2dict(vidPath:str, starting_key:str="F", total_keys:int=65, white_unpress
             out[keyName] = "".join(data[keyName])
     
     return out
+
+def key2midi(keyName:str):
+    if not "#" in keyName:
+        if keyName[0] == "C":
+            return int(keyName[1])*12 + 12
+        elif keyName[0] == "D":
+            return int(keyName[1])*12 + 14
+        elif keyName[0] == "E":
+            return int(keyName[1])*12 + 16
+        elif keyName[0] == "F":
+            return int(keyName[1])*12 + 17
+        elif keyName[0] == "G":
+            return int(keyName[1])*12 + 19
+        elif keyName[0] == "A":
+            return int(keyName[1])*12 + 21
+        elif keyName[0] == "B":
+            return int(keyName[1])*12 + 23
+        else:
+            raise Exception("Invalid key name")
+
+    else:
+        if keyName[0] == "C":
+            return int(keyName[2])*12 + 13
+        elif keyName[0] == "D":
+            return int(keyName[2])*12 + 15
+        elif keyName[0] == "F":
+            return int(keyName[2])*12 + 18
+        elif keyName[0] == "G":
+            return int(keyName[2])*12 + 20
+        elif keyName[0] == "A":
+            return int(keyName[2])*12 + 22
+        else:
+            raise Exception("Invalid key name")
