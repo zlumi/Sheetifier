@@ -37,3 +37,13 @@ def getKeyPositions(strtKey:str, nKeys:int, totalWidth:int, barYPos:int, blkwhtO
             keys[keys.index(key)] = (key, (int(totalWidth/whites*wCount), barYPos))
     
     return keys
+
+def areColorsClose(value1, value2, tolerance:int):
+    if type(value1) == str:
+        value1 = tuple(map(int, value1[1:-1].split(",")))
+    if type(value2) == str:
+        value2 = tuple(map(int, value2[1:-1].split(",")))
+
+    if abs(value1[0] - value2[0]) <= tolerance and abs(value1[1] - value2[1]) <= tolerance and abs(value1[2] - value2[2]) <= tolerance:
+        return True
+    return False
