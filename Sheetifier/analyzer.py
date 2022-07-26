@@ -1,5 +1,18 @@
 import cv2
 
+def getProperty(vidPath:str, property:str):
+    vCap = cv2.VideoCapture(vidPath)
+    property = property.upper().lower()
+
+    if property == "fps":
+        return vCap.get(cv2.CAP_PROP_FPS)
+    elif property == ("framecount" or "frame_count"):
+        return vCap.get(cv2.CAP_PROP_FRAME_COUNT)
+    elif property == "duration":
+        return getProperty(vidPath, "framecount")/getProperty(vidPath, "fps")
+    else:
+        raise Exception("Invalid property argument passed to getProperty()")
+
 def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int) -> list:
     keys = []
     template = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -124,6 +137,30 @@ def vid2dict(vidPath:str, starting_key:str, total_keys:int, white_unpressed:tupl
             out[keyName] = "".join(data[keyName])
     
     return out
+
+def compress_binary_string(binary_string:str) -> list:
+    compressed = []
+
+    for i in range(len(binary_string)):
+        if binary_string[i] == "1":
+            if i > 0:
+                if binary_string[i-1] == "0":
+                    compressed.append([i])
+            else:
+                compressed.append([i])
+
+            try:
+                if binary_string[i+1] == "0":
+                    compressed[-1].append(i)
+            except IndexError:
+                compressed[-1].append(i)
+
+            pass
+
+        else:
+            pass
+
+    return compressed
 
 def key2midi(keyName:str):
     if not "#" in keyName:
