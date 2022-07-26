@@ -4,6 +4,8 @@ from midiutil import MIDIFile
 vid_path    = "clips/trimmed.mov"
 low_key     = "F1"
 total_keys  = 65
+whtOffset   = 48
+
 
 track       = 0
 channel     = 0
@@ -12,7 +14,7 @@ volume      = 100   # 0-127, as per the MIDI standard
 
 MyMIDI = MIDIFile(1)
 MyMIDI.addTempo(track, 0, bpm)
-vid_data = vid2dict(vid_path, low_key, total_keys, closeness_tolerance=30)
+vid_data = vid2dict(vid_path, low_key, total_keys, whtOffset, closeness_tolerance=50)
 fps = getProperty(vid_path, "fps")
 
 for key in vid_data.keys():

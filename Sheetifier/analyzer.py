@@ -13,7 +13,7 @@ def getProperty(vidPath:str, property:str):
     else:
         raise Exception("Invalid property argument passed to getProperty()")
 
-def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int) -> list:
+def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int = 48) -> list:
     keys = []
     template = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -63,13 +63,13 @@ def areColorsClose(value1, value2, tolerance:int):
         return True
     return False
 
-def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int):
+def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int, whiteOffsetFromBlack:int):
     vCap = cv2.VideoCapture(vidPath)
     keys = getKeyPositions(
         starting_key, total_keys, 
         int(vCap.get(cv2.CAP_PROP_FRAME_WIDTH)), 
         int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)/5), 
-        50
+        whiteOffsetFromBlack
     )
 
     detected_colors = {}
@@ -97,23 +97,21 @@ def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int):
 
     return(white_unpressed, black_unpressed)
 
-def vid2dict(vidPath:str, starting_key:str, total_keys:int, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
+def vid2dict(vidPath:str, starting_key:str, total_keys:int, whiteOffsetFromBlack: int, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
     vCap = cv2.VideoCapture(vidPath)
     keys = getKeyPositions(
         starting_key, total_keys, 
         int(vCap.get(cv2.CAP_PROP_FRAME_WIDTH)), 
         int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)/5), 
-        50
+        whiteOffsetFromBlack
     )
 
     data = {}
     for key in keys:
         data[key[0]] = []
-    frame_number = 0
 
     for frame in range(int(vCap.get(cv2.CAP_PROP_FRAME_COUNT))):
         ret, frame = vCap.read()
-        frame_number += 1
 
         for key in keys:
             color_value = tuple(frame[
