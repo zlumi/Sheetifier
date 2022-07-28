@@ -1,21 +1,9 @@
-from analyzer import getProperty, vid2dict, compress_binary_string, key2midi
 from midiutil import MIDIFile
-
-vid_path    = "clips/trimmed.mov"
-low_key     = "F1"
-total_keys  = 65
-whtOffset   = 48
-
-
-track       = 0
-channel     = 0
-bpm         = 82
-volume      = 100   # 0-127, as per the MIDI standard
+from analyzer import compress_binary_string, key2midi
+from config import *
 
 MyMIDI = MIDIFile(1)
 MyMIDI.addTempo(track, 0, bpm)
-vid_data = vid2dict(vid_path, low_key, total_keys, whtOffset, closeness_tolerance=50)
-fps = getProperty(vid_path, "fps")
 
 for key in vid_data.keys():
     for note in compress_binary_string(vid_data[key]):

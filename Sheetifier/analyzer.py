@@ -13,7 +13,7 @@ def getProperty(vidPath:str, property:str):
     else:
         raise Exception("Invalid property argument passed to getProperty()")
 
-def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int = 48) -> list:
+def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:int, whiteOffsetFromBlack:int=48, leftOffset:int=0) -> list:
     keys = []
     template = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -51,6 +51,10 @@ def getKeyPositions(start_key:str, total_key_amount:int, total_width:int, barY:i
         else:
             keys[keys.index(key)] = (key, (int(total_width/whites*wCount), barY))
     
+    if leftOffset != 0:
+        for key in keys:
+            keys[keys.index(key)] = (key[0], (key[1][0] + leftOffset, key[1][1]))
+    
     return keys
 
 def areColorsClose(value1, value2, tolerance:int):
@@ -63,14 +67,8 @@ def areColorsClose(value1, value2, tolerance:int):
         return True
     return False
 
-def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int, whiteOffsetFromBlack:int):
+def find_white_and_black_key_colors(vidPath, keys:list):
     vCap = cv2.VideoCapture(vidPath)
-    keys = getKeyPositions(
-        starting_key, total_keys, 
-        int(vCap.get(cv2.CAP_PROP_FRAME_WIDTH)), 
-        int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)/5), 
-        whiteOffsetFromBlack
-    )
 
     detected_colors = {}
 
@@ -97,14 +95,8 @@ def find_white_and_black_key_colors(vidPath, starting_key:str, total_keys:int, w
 
     return(white_unpressed, black_unpressed)
 
-def vid2dict(vidPath:str, starting_key:str, total_keys:int, whiteOffsetFromBlack: int, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
+def vid2dict(vidPath:str, keys:list, white_unpressed:tuple=(239, 252, 254), black_unpressed:tuple=(20, 20, 20), closeness_tolerance:int=50) -> dict:
     vCap = cv2.VideoCapture(vidPath)
-    keys = getKeyPositions(
-        starting_key, total_keys, 
-        int(vCap.get(cv2.CAP_PROP_FRAME_WIDTH)), 
-        int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - int(vCap.get(cv2.CAP_PROP_FRAME_HEIGHT)/5), 
-        whiteOffsetFromBlack
-    )
 
     data = {}
     for key in keys:
@@ -113,21 +105,22 @@ def vid2dict(vidPath:str, starting_key:str, total_keys:int, whiteOffsetFromBlack
     for frame in range(int(vCap.get(cv2.CAP_PROP_FRAME_COUNT))):
         ret, frame = vCap.read()
 
-        for key in keys:
-            color_value = tuple(frame[
-                key[1][1], key[1][0]
-            ])
+        if ret:
+            for key in keys:
+                color_value = tuple(frame[
+                    key[1][1], key[1][0]
+                ])
 
-            if "#" in key[0]:
-                if areColorsClose(color_value, black_unpressed, closeness_tolerance):
-                    data[key[0]].append("0")
+                if "#" in key[0]:
+                    if areColorsClose(color_value, black_unpressed, closeness_tolerance):
+                        data[key[0]].append("0")
+                    else:
+                        data[key[0]].append("1")
                 else:
-                    data[key[0]].append("1")
-            else:
-                if areColorsClose(color_value, white_unpressed, closeness_tolerance):
-                    data[key[0]].append("0")
-                else:
-                    data[key[0]].append("1")
+                    if areColorsClose(color_value, white_unpressed, closeness_tolerance):
+                        data[key[0]].append("0")
+                    else:
+                        data[key[0]].append("1")
 
     out = {}
     for keyName in data.keys():
