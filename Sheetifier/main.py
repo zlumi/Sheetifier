@@ -10,7 +10,8 @@ for key in vid_data.keys():
         time = note[0]/fps / (60/bpm)
         duration = (note[1] - note[0])/fps / (60/bpm)
 
-        MyMIDI.addNote(track, channel, key2midi(key), time, duration, volume)
+        if duration > 0:
+            MyMIDI.addNote(track, channel, key2midi(key), time, duration, volume)
 
 with open("output.mid", "wb") as output_file:
     MyMIDI.writeFile(output_file)

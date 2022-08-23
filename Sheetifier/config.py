@@ -3,9 +3,9 @@ channel     = 0
 bpm         = 113
 volume      = 100   # 0-127, as per the MIDI standard
 
-vid_path    = "clips/Untitled1.mp4"
+vid_path    = "clips/src.mp4"
 low_key     = "A0"
-total_keys  = 88
+total_keys  = 87
 whtOffset   = 100
 leftOffset  = 1
 widthIncrease = 0

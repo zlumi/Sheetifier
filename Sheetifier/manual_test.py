@@ -2,7 +2,7 @@ import cv2
 from analyzer import areColorsClose
 from config import *
 
-def vidEval(fps=25):
+def vidEval(fps=5):
     vCap = cv2.VideoCapture(vid_path)
     while vCap.isOpened():
         ret, frame = vCap.read()
@@ -38,4 +38,5 @@ def singleFrameEval(frame_n:int = 24*5):
     cap.release()
 
 if __name__ == "__main__":
-    singleFrameEval()
+    # singleFrameEval()
+    vidEval()
